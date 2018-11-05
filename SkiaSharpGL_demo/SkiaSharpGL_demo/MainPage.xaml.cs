@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
@@ -12,56 +9,54 @@ namespace SkiaSharpGL_demo
 {
     public partial class MainPage : ContentPage
     {
-        Stopwatch stopwatch = new Stopwatch();
-        bool pageIsActive;
-        float scale;
+        readonly Stopwatch _stopwatch = new Stopwatch();
+        private bool _pageIsActive;
+        private float _scale;
 
         public MainPage()
         {
             InitializeComponent();
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
-            pageIsActive = true;
-            AnimationLoop();
+            _pageIsActive = true;
+            await AnimationLoop();
         }
 
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            pageIsActive = false;
+            _pageIsActive = false;
         }
 
         async Task AnimationLoop()
         {
-            stopwatch.Start();
+            _stopwatch.Start();
 
-            while (pageIsActive)
+            while (_pageIsActive)
             {
-                double cycleTime = slider.Value;
-                double t = stopwatch.Elapsed.TotalSeconds % cycleTime / cycleTime;
-                scale = (1 + (float)Math.Sin(2 * Math.PI * t)) / 2;
+                var cycleTime = slider.Value;
+                var t = _stopwatch.Elapsed.TotalSeconds % cycleTime / cycleTime;
+                _scale = (1 + (float)Math.Sin(2 * Math.PI * t)) / 2;
                 canvasView.InvalidateSurface();
                 await Task.Delay(TimeSpan.FromSeconds(1.0 / 30));
             }
-            stopwatch.Stop();
+            _stopwatch.Stop();
         }
 
         private void SKGLView_OnPaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
         {
-
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.White);
 
             var info = e.RenderTarget;
-
             var maxRadius = 0.75f * Math.Min(info.Width, info.Height) / 2;
             var minRadius = 0.25f * maxRadius;
 
-            var xRadius = minRadius * scale + maxRadius * (1 - scale);
-            var yRadius = maxRadius * scale + minRadius * (1 - scale);
+            var xRadius = minRadius * _scale + maxRadius * (1 - _scale);
+            var yRadius = maxRadius * _scale + minRadius * (1 - _scale);
 
             using (var paint = new SKPaint())
             {
