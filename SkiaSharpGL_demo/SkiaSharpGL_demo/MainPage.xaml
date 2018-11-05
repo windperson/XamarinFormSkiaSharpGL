@@ -9,11 +9,24 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Text="SkiaSharp OpenGLView Demo" />
-        <skia:SKGLView PaintSurface="SKGLView_OnPaintSurface" Grid.Row="1" />
+
+        <Slider x:Name="slider"
+                Grid.Row="0"
+                Maximum="10"
+                Minimum="0.1"
+                Value="5"
+                Margin="20, 0" />
+
+        <Label Grid.Row="1"
+               Text="{Binding Source={x:Reference slider},
+                              Path=Value,
+                              StringFormat='Cycle time = {0:F1} seconds'}"
+               HorizontalTextAlignment="Center" />
+        <skia:SKGLView x:Name="canvasView" PaintSurface="SKGLView_OnPaintSurface" Grid.Row="2" />
     </Grid>
     
 </ContentPage>
