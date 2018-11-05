@@ -11,6 +11,9 @@ namespace SkiaSharpGL_demo
 {
     public partial class MainPage : ContentPage
     {
+        private readonly Dictionary<long, SKPath> _temporaryPaths = new Dictionary<long, SKPath>();
+        private readonly List<SKPath> _paths = new List<SKPath>();
+
         public MainPage()
         {
             InitializeComponent();
@@ -22,34 +25,68 @@ namespace SkiaSharpGL_demo
 
             canvas.Clear(SKColors.White);
 
-            DrawCircle(canvas);
+            DrawPath(canvas);
         }
 
-        private void DrawCircle(SKCanvas canvas)
+        private void DrawPath(SKCanvas canvas)
         {
-            using (var circleFill = new SKPaint
-            {
-                IsAntialias = true,
-                Style = SKPaintStyle.Fill,
-                Color = SKColors.Blue
-            })
-            {
-                // draw the circle fill
-                canvas.DrawCircle(100, 100, 40, circleFill);
-            }
-
-            // create the paint for the circle border
-            using (var circleBorder = new SKPaint
+            var touchPathStroke = new SKPaint
             {
                 IsAntialias = true,
                 Style = SKPaintStyle.Stroke,
-                Color = SKColors.Red,
+                Color = SKColors.Purple,
                 StrokeWidth = 5
-            })
+            };
+
+            // draw the paths,
+            // use ToList() to prevent touch event occured at once with Paint event handler,
+            // causing instance level variable's data structure consistence.
+            // https://stackoverflow.com/a/604843
+            foreach (var touchPath in _temporaryPaths.ToList())
             {
-                // draw the circle border
-                canvas.DrawCircle(100, 100, 40, circleBorder);
+                canvas.DrawPath(touchPath.Value, touchPathStroke);
             }
+            foreach (var touchPath in _paths.ToList())
+            {
+                canvas.DrawPath(touchPath, touchPathStroke);
+            }
+        }
+
+
+
+        private void SKGLView_OnTouch(object sender, SKTouchEventArgs e)
+        {
+            switch (e.ActionType)
+            {
+                case SKTouchAction.Pressed:
+                    // start of a stroke
+                    var p = new SKPath();
+                    p.MoveTo(e.Location);
+                    _temporaryPaths[e.Id] = p;
+                    break;
+                case SKTouchAction.Moved:
+                    // the stroke, while pressed
+                    if (e.InContact && _temporaryPaths.ContainsKey(e.Id))
+                    {
+                        _temporaryPaths[e.Id].LineTo(e.Location);
+                    }
+                    break;
+                case SKTouchAction.Released:
+                    // end of a stroke
+                    _paths.Add(_temporaryPaths[e.Id]);
+                    _temporaryPaths.Remove(e.Id);
+                    break;
+                case SKTouchAction.Cancelled:
+                    // we don't want that stroke
+                    _temporaryPaths.Remove(e.Id);
+                    break;
+            }
+
+            // we have handled these events
+            e.Handled = true;
+
+            // update the UI
+            ((SKGLView)sender).InvalidateSurface();
         }
     }
 }

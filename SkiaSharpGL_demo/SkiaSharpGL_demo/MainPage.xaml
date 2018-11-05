@@ -12,8 +12,11 @@
             <RowDefinition Height="20"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <Label Text="SkiaSharp OpenGLView Demo" />
-        <skia:SKGLView PaintSurface="SKGLView_OnPaintSurface" Grid.Row="1" />
+        <Label Text="SkiaSharp SKGLView Touch Demo" />
+        
+        <skia:SKGLView PaintSurface="SKGLView_OnPaintSurface" Grid.Row="1" 
+                       EnableTouchEvents="True" Touch="SKGLView_OnTouch"/>
+       
     </Grid>
     
 </ContentPage>
